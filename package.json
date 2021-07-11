@@ -1,0 +1,23 @@
+{
+  "name": "buddybook-app",
+  "version": "1.0.0",
+  "description": "Connect with your friends and family",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mtarique/buddybook-app.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mtarique/buddybook-app/issues"
+  },
+  "homepage": "https://github.com/mtarique/buddybook-app#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
