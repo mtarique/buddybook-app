@@ -4,7 +4,7 @@ exports.home = function(req, res) {
     if(req.session.user) {
         res.render("home-dashboard", {username: req.session.user.username})
     } else {
-        res.render('home-guest')
+        res.render('home-guest', {errors: req.flash('errors'), regErrors: req.flash('regErrors')})
     }
 }
 
@@ -14,7 +14,14 @@ exports.register = function(req, res) {
     user.register()
     
     if(user.errors.length) {
-        res.send(user.errors)
+        user.errors.forEach(function(error) {
+            req.flash('regErrors', error)
+        })
+
+        // Redirect only if error flash session saved in db
+        req.session.save(function() {
+            res.redirect('/')
+        })
     } else {
         res.send("Congrats, there are no errors.")
     }
@@ -27,8 +34,12 @@ exports.login = (req, res) => {
         req.session.save(function(){
             res.redirect('/'); 
         })
-    }).catch(function(e){
-        res.send(e); 
+    }).catch(function(e) {
+        req.flash('errors', e)
+        req.session.save(function() {
+            res.redirect('/')
+        })
+        res.redirect('/')
     })
 }
 
