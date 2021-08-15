@@ -44,17 +44,10 @@ Post.prototype.create = function() {
         } 
   })
 }
-
-Post.findSingleById = function(id) {
-    return new Promise(async (reslove, reject) => {
-        if(typeof(id) != "string" || !ObjectId.isValid(id)) {
-            reject()
-            return
-        }
-
-        // let post = await postsCollection.findOne({_id: ObjectId(id)})
-        let posts = await postsCollection.aggregate([
-            {$match: {_id: new ObjectId(id)}}, 
+// {$match: {_id: new ObjectId(id)}},
+Post.reusablePostQuery = function(uniqueOperations) {
+    return new Promise(async function(resolve, reject) {
+        let aggOperations = uniqueOperations.concat([
             {$lookup: {from: "users", localField: "created_by", foreignField: "_id", as: "authorDocument"}},
             {$project: {
                 title: 1, 
@@ -62,7 +55,10 @@ Post.findSingleById = function(id) {
                 created_at: 1, 
                 author: {$arrayElemAt: ["$authorDocument", 0]}
             }}
-        ]).toArray()
+        ])
+
+        // let post = await postsCollection.findOne({_id: ObjectId(id)})
+        let posts = await postsCollection.aggregate(aggOperations).toArray()
 
         // Clean up author property in each post object
         posts = posts.map((post) => {
@@ -73,12 +69,35 @@ Post.findSingleById = function(id) {
             return post
         })
 
+        resolve(posts)
+    })
+}
+
+Post.findSingleById = function(id) {
+    return new Promise(async (reslove, reject) => {
+        if(typeof(id) != "string" || !ObjectId.isValid(id)) {
+            reject()
+            return
+        }
+
+        // let post = await postsCollection.findOne({_id: ObjectId(id)})
+        let posts = await Post.reusablePostQuery([
+            {$match: {_id: new ObjectId(id)}}
+        ])
+
         if(posts.length) {
             reslove(posts[0])
         } else {
             reject()
         }
     })
+}
+
+Post.findByAuthorId = function(authorId) {
+    return Post.reusablePostQuery([
+        {$match: {created_by: authorId}}, 
+        {$sort: {created_at: -1}}
+    ])
 }
 
 module.exports = Post
