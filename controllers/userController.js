@@ -60,3 +60,11 @@ exports.logout = (req, res) => {
         res.redirect('/')
     }); 
 }
+
+exports.ifUserExists = function(req, res, next) {
+    next()
+}
+
+exports.profilePostScreen = function(req, res) {
+    res.render('profile')
+}
