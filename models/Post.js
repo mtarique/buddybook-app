@@ -2,10 +2,11 @@ const postsCollection = require('../database').db().collection("posts")
 const {ObjectId} = require('mongodb')
 const User = require('./User')
 
-let Post = function(data, userid) {
+let Post = function(data, userid, requestedPostId) {
   this.data = data
   this.errors = []
   this.userid = userid
+  this.requestedPostId = requestedPostId
 }
 
 Post.prototype.cleanUp = function() {
@@ -45,6 +46,38 @@ Post.prototype.create = function() {
   })
 }
 
+Post.prototype.update = function() {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let post = await Post.findSingleById(this.requestedPostId, this.userid)
+
+            // if 
+            if(post.isVisitorOwner) {
+                let status = await this.actuallyUpdate()
+                resolve(status)
+            } else {
+                reject()
+            }
+        } catch {
+            reject()
+        }
+    })
+}
+
+Post.prototype.actuallyUpdate = function() {
+    return new Promise(async (resolve, reject) => {
+        this.cleanUp()
+        this.validate()
+
+        if(!this.errors.length) {
+            await postsCollection.findOneAndUpdate({_id: new ObjectId(this.requestedPostId)}, {$set: {title: this.data.title, body: this.data.body}})
+            resolve("success")
+        } else {
+            resolve("failure")
+        }
+    })
+} 
+
 Post.reusablePostQuery = function(uniqueOperations, visitorId) {
     return new Promise(async function(resolve, reject) {
         let aggOperations = uniqueOperations.concat([
@@ -76,7 +109,7 @@ Post.reusablePostQuery = function(uniqueOperations, visitorId) {
 }
 
 Post.findSingleById = function(id, visitorId) {
-    return new Promise(async (reslove, reject) => {
+    return new Promise(async (resolve, reject) => {
         if(typeof(id) != "string" || !ObjectId.isValid(id)) {
             reject()
             return
@@ -88,7 +121,7 @@ Post.findSingleById = function(id, visitorId) {
         ], visitorId)
 
         if(posts.length) {
-            reslove(posts[0])
+            resolve(posts[0])
         } else {
             reject()
         }
@@ -101,5 +134,7 @@ Post.findByAuthorId = function(authorId) {
         {$sort: {created_at: -1}}
     ])
 }
+
+
 
 module.exports = Post
