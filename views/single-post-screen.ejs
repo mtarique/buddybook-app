@@ -19,7 +19,7 @@
       Posted by <a href="#"><%= post.author.username %></a> on <%= post.created_at.getMonth() + 1 %>/<%= post.created_at.getDate() %>/<%= post.created_at.getFullYear() %></p>
 
     <div class="body-content">
-      <%= post.body %>
+      <%- filterUserHTML(post.body) %>
     </div>
 
   </div>
