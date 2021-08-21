@@ -14,6 +14,7 @@ router.post('/create-post', userController.authenticate, postController.create)
 router.get('/post/:id', postController.viewSingle)
 router.get('/post/:id/edit', userController.authenticate, postController.viewEditScreen)
 router.post('/post/:id/edit', userController.authenticate, postController.edit)
+router.post('/post/:id/delete', userController.authenticate, postController.delete)
 
 // Profile related routes
 router.get('/profile/:username', userController.ifUserExists, userController.profilePostScreen)
