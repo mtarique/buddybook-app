@@ -1,5 +1,6 @@
 const User = require('../models/User')
 const Post = require('../models/Post')
+const Follow = require('../models/Follow')
 
 exports.home = function(req, res) {
     if(req.session.user) {
@@ -62,6 +63,17 @@ exports.logout = (req, res) => {
     }); 
 }
 
+exports.sharedProfileData = async function(req, res, next) {
+    let isFollowing = false; 
+
+    if(req.session.user) {
+        isFollowing = await Follow.isVisitorFollowing(req.profileUser._id, req.visitorId); 
+    }
+
+    req.isFollowing = isFollowing; 
+    next(); 
+}
+
 exports.ifUserExists = function(req, res, next) {
     User.findByUsername(req.params.username).then(function(userDocument) {
         req.profileUser = userDocument
@@ -76,7 +88,8 @@ exports.profilePostScreen = function(req, res) {
         res.render('profile', {
             posts: posts, 
             profileUsername: req.profileUser.username, 
-            profileAvatar: req.profileUser.avatar
+            profileAvatar: req.profileUser.avatar, 
+            isFollowing: req.isFollowing
         })    
     }).catch(function() {
         res.render('404'); 
