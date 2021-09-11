@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router(); 
 const userController = require('./controllers/userController')
 const postController = require('./controllers/postController')
+const followController = require('./controllers/followController')
 
 router.get('/', userController.home)
 router.post('/register', userController.register)
@@ -19,5 +20,8 @@ router.post('/search', postController.search)
 
 // Profile related routes
 router.get('/profile/:username', userController.ifUserExists, userController.profilePostScreen)
+
+// Follow related routes
+router.post('/addFollow/:username', userController.ifUserExists, followController.addFollow)
 
 module.exports = router
