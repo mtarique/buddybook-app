@@ -4,10 +4,13 @@ const userController = require('./controllers/userController')
 const postController = require('./controllers/postController')
 const followController = require('./controllers/followController')
 
+// User related router
 router.get('/', userController.home)
 router.post('/register', userController.register)
 router.post('/login', userController.login)
 router.post('/logout', userController.logout)
+router.post('/doesUsernameExist', userController.doesUsernameExist)
+router.post('/doesEmailExist', userController.doesEmailExist)
 
 // Post related routes
 router.get('/create-post', userController.authenticate, postController.viewCreateScreen)
