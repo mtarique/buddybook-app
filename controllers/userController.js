@@ -1,6 +1,19 @@
 const User = require('../models/User')
 const Post = require('../models/Post')
 const Follow = require('../models/Follow')
+const jwt = require('jsonwebtoken')
+const { findByUsername } = require('../models/User')
+const { findByAuthorId } = require('../models/Post')
+
+exports.apiGetPostsByUsername = async function(req, res) {
+    try {
+        let authorDoc = await findByUsername(req.params.username)
+        let posts = await Post.findByAuthorId(authorDoc._id)
+        res.json(posts)
+    } catch {
+        res.json("Sorry, invalid user requested.")
+    }
+}
 
 exports.home = async function(req, res) {
     if(req.session.user) {
@@ -59,6 +72,15 @@ exports.login = (req, res) => {
     })
 }
 
+exports.apiLogin = (req, res) => {
+    let user = new User(req.body)
+    user.login().then(function(result) {
+        res.json(jwt.sign({_id: user.data._id}, process.env.JWTSECRET, {expiresIn: '7d'}))
+    }).catch(function(e) {
+        res.json("Sorry! Your values are not correct.")
+    })
+}
+
 exports.logout = (req, res) => {
     req.session.destroy(function() {
         res.redirect('/')
@@ -97,6 +119,15 @@ exports.ifUserExists = function(req, res, next) {
     }).catch(function() {
         res.render('404')
     })
+}
+
+exports.apiIfUserExists = function(req, res, next) {
+    try {
+        req.apiUser = jwt.verify(req.body.token, process.env.JWTSECRET)
+        next()
+    } catch {
+        res.json("Sorry, you must provide a valid token.")
+    }
 }
 
 exports.profilePostScreen = function(req, res) {
